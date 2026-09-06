@@ -2,7 +2,7 @@
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>LangChainViewer — 実行中のエージェントを1画面で見るビューア</title>
-<meta name="description" content="LangGraph のエージェントが今どのノードにいて、ローカルLLMと何をやり取りしているかを1画面で見るビューア。Python標準ライブラリのみ、追加依存なし。MIT。">
+<meta name="description" content="LangGraph で書いたエージェントが今どのノードを処理していて、ローカルLLMと何をやり取りしているかを1画面で見るビューア。Python標準ライブラリのみ、追加依存なし。MIT。">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><text y='52' font-size='52'>🔎</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,9 +18,29 @@
 <div class="hero"><div class="wrap">
   <span class="kicker">PYTHON 標準ライブラリのみ / 追加依存なし</span>
   <h1>実行中のエージェントを、<br><span class="mk">1画面</span>で <span class="mk2">見る</span></h1>
-  <p class="sub">LangGraph のエージェントが<b>今どのノードにいて</b>、
+  <p class="sub">LangGraph で書いたエージェントが<b>今どのノードを処理していて</b>、
   <b>ローカルLLMと何をやり取りしていて</b>、<b>どのSQLを投げたか</b>を、動いている最中に表示します。<br>
   サーバーは1ファイル。<code>python viewer/server.py</code> で立ち、ブラウザで開くだけです。</p>
+  <div class="terms">
+    <div class="hd">用語 — このページに出てくる名前</div>
+    <dl>
+      <dt>LangChain<span>ライブラリ群</span></dt>
+      <dd>LLMを使うアプリを組むためのオープンソースのライブラリです。
+        モデルの呼び出し・プロンプト・資料の検索・ツールの実行といった部品を、
+        共通の書き方で扱えるようにします。</dd>
+      <dt>LangGraph<span>この系列のエージェント用ライブラリ</span></dt>
+      <dd>処理を<b>ノードと矢印のグラフ</b>として書きます。
+        「まず経路を決める → 資料を引く → SQLを書く → 自己採点する → 足りなければ戻る」を、
+        <b>分岐とループを持つ図としてコードに書ける</b>のが特徴です。
+        このリポジトリのエージェントは、この形で書いてあります。<br>
+        LangChain と同じ開発元が出しているもので、モデルの呼び出しなどは LangChain の部品をそのまま使います。
+        このリポジトリの名前が LangChainViewer で、画面に映るのが LangGraph のグラフなのは、そのためです。</dd>
+      <dt>このビューアが映すもの<span>実行中のグラフ</span></dt>
+      <dd>そのグラフが<b>今どのノードを処理しているか</b>、各ノードが<b>LLMに何を投げて何が返ったか</b>、
+        <b>どのSQLを実行したか</b>を、走っている最中に画面へ出します。
+        グラフは書けても、実行中に何が起きているかは通常コードからは見えません。そこを見えるようにするものです。</dd>
+    </dl>
+  </div>
   <div class="pills">
     <span class="pill a">追加依存 0</span>
     <span class="pill">サーバーは1ファイル</span>

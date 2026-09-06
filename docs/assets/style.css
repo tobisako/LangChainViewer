@@ -145,3 +145,16 @@ footer a{color:var(--aqua)}
 .spec div{border:2px solid var(--line);border-radius:10px;background:#fff;padding:16px 18px}
 .spec b{display:block;margin-bottom:5px}
 .spec span{color:var(--ink2);font-size:14.5px;line-height:1.85}
+
+/* 用語の説明ブロック（ヒーロー直下） */
+.terms{margin:30px 0 0;border:2px solid var(--ink);border-radius:12px;background:#fff;
+  box-shadow:5px 5px 0 rgba(13,34,51,.12);overflow:hidden}
+.terms .hd{background:var(--ink);color:#dff3fb;padding:9px 18px;
+  font:700 11px/1.6 "JetBrains Mono",monospace;letter-spacing:.16em}
+.terms dl{margin:0;padding:20px 22px 22px}
+.terms dt{font:900 16px/1.7 "Noto Sans JP",sans-serif;margin:0 0 4px}
+.terms dt span{font:500 11px/1 "JetBrains Mono",monospace;color:var(--aqua-d);
+  border:1px solid var(--line);border-radius:4px;padding:3px 8px;margin-left:9px;vertical-align:2px}
+.terms dd{margin:0 0 16px;color:var(--ink2);font-size:15px;line-height:1.95}
+.terms dd:last-child{margin-bottom:0}
+.terms dd b{color:var(--ink)}

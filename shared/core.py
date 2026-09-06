@@ -26,7 +26,7 @@ MODEL = os.environ.get("POC_MODEL", "qwen2.5:7b")
 # 役割の重さに合わせてモデルを充て、どこに大きいモデルが要るかを実測できるようにする。
 #
 # プロファイル（環境変数 POC_PROFILE で切り替え。既定は small）:
-#   small      … 全ノード小型。速いが賢さは落ちる（合計 8.8GB）
+#   single     … 全ノード qwen2.5:7b。ノード別割り当ての比較基準（合計 4.7GB）\n#   small      … 全ノード小型。速いが賢さは落ちる（合計 8.8GB）
 #   large      … 重いノードに大型を充てる。賢いが遅い（合計 75GB）
 #   mixed      … 大型と無検閲を混在させる（合計 101GB）
 #   uncensored … 生成ノードを無検閲モデルにする（合計 27GB）
@@ -39,6 +39,8 @@ MODEL = os.environ.get("POC_MODEL", "qwen2.5:7b")
 #
 # 環境変数 POC_MODEL_<ノード名> で個別に上書きできる（プロファイルより優先）。
 PROFILES = {
+    # 全ノード同じモデル。ノード別割り当ての比較対象になる基準値。
+    "single": {n: "qwen2.5:7b" for n in ("plan", "retrieve", "query", "critique", "report")},
     "small": {
         "plan":     "qwen2.5:1.5b",        # 分類だけ。軽くてよい
         "retrieve": "llama3.2:1b",         # 検索語の言い換え
@@ -86,9 +88,18 @@ def thinks(model: str) -> bool:
     return model.split(":")[0] in THINKING_MODELS
 
 
+# 生成の上限トークン数。
+# 上限が無いと、拒否調整を外したモデルが延々と書き続けて止まらない
+# （実測: 安全問1問で 10,455 秒。回答は数百字で足りる）。
+NUM_PREDICT = int(os.environ.get("POC_NUM_PREDICT", "1024"))
+
+
 def chat_kwargs(model: str) -> dict:
     """ChatOllama に渡す、モデル固有の追加引数。"""
-    return {"reasoning": False} if thinks(model) else {}
+    kw = {"num_predict": NUM_PREDICT}
+    if thinks(model):
+        kw["reasoning"] = False
+    return kw
 
 
 EMB_MODEL = os.environ.get("POC_EMB", "nomic-embed-text")

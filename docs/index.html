@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LangChainViewer — エージェントが動いているところを見せる</title>
+<meta name="description" content="ローカルLLMだけで動く資料検索＋SQL集計エージェントと、その動作を1手ずつ見せるビューア。LangGraph / CrewAI / AutoGen を同一条件で比較。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><text y='52' font-size='52'>🔎</text></svg>">
+<style>
+:root{--bg:#0d1117;--panel:#141b24;--line:#243040;--fg:#e6edf3;--dim:#8b98a5;
+      --acc:#58a6ff;--ok:#3fb950;--ng:#f85149;--warn:#d29922}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.85 "Hiragino Sans","Yu Gothic",system-ui,-apple-system,sans-serif;
+     -webkit-font-smoothing:antialiased}
+a{color:var(--acc)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+/* ヒーロー */
+.hero{border-bottom:1px solid var(--line);
+      background:radial-gradient(900px 420px at 20% -10%,#182a3f 0%,transparent 70%),#0d1117}
+.hero .wrap{padding:64px 24px 52px}
+.eyebrow{color:var(--acc);font-size:13px;letter-spacing:.16em;margin:0 0 14px}
+h1{font-size:40px;line-height:1.3;margin:0 0 18px;letter-spacing:-.01em}
+h1 small{display:block;font-size:19px;font-weight:400;color:var(--dim);margin-top:12px;line-height:1.7}
+.badges{display:flex;flex-wrap:wrap;gap:9px;margin:26px 0 0}
+.badge{font-size:13px;border:1px solid var(--line);border-radius:99px;padding:5px 15px;color:var(--dim)}
+.badge.on{color:var(--ok);border-color:var(--ok)}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.cta a{display:inline-block;text-decoration:none;font-size:15px;padding:11px 24px;border-radius:8px;
+       border:1px solid var(--acc);color:var(--acc)}
+.cta a.p{background:var(--acc);color:#08121f;font-weight:600}
+
+/* セクション */
+section{padding:60px 0;border-bottom:1px solid var(--line)}
+h2{font-size:27px;margin:0 0 10px;letter-spacing:-.01em}
+h2 .n{color:var(--acc);font-size:15px;display:block;letter-spacing:.14em;margin-bottom:9px}
+.lead{color:var(--dim);font-size:17px;margin:0 0 34px;max-width:76ch}
+h3{font-size:19px;margin:40px 0 12px}
+
+/* メディア */
+figure{margin:0 0 30px}
+figure video,figure img{width:100%;display:block;border:1px solid var(--line);
+                        border-radius:10px;background:#000}
+figcaption{color:var(--dim);font-size:14px;margin-top:11px;line-height:1.75}
+figcaption b{color:var(--fg);font-weight:600}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+@media(max-width:820px){.grid2,.grid3{grid-template-columns:1fr}h1{font-size:30px}}
+
+/* 表 */
+table{width:100%;border-collapse:collapse;margin:22px 0;font-size:15px}
+th,td{border-bottom:1px solid var(--line);padding:11px 13px;text-align:left;vertical-align:top}
+th{color:var(--dim);font-weight:500;font-size:13px;letter-spacing:.04em;white-space:nowrap}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.win{color:var(--ok);font-weight:600}
+.lose{color:var(--ng)}
+tr.hi td{background:#16202c}
+
+/* カード */
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:26px 0}
+@media(max-width:820px){.cards{grid-template-columns:1fr}}
+.card{border:1px solid var(--line);border-radius:11px;padding:22px 24px;background:var(--panel)}
+.card h4{margin:0 0 9px;font-size:16px}
+.card p{margin:0;color:var(--dim);font-size:15px;line-height:1.8}
+.card .k{color:var(--acc);font-size:12px;letter-spacing:.12em;display:block;margin-bottom:9px}
+
+pre{background:#0b1017;border:1px solid var(--line);border-radius:9px;
+    padding:16px 18px;overflow-x:auto;font:13px/1.75 "SF Mono",Menlo,monospace;color:#c9d5e1}
+code{font:13px/1.6 "SF Mono",Menlo,monospace;background:#182029;padding:2px 6px;border-radius:4px}
+pre code{background:none;padding:0}
+blockquote{margin:22px 0;padding:14px 20px;border-left:3px solid var(--warn);
+           background:#171a12;color:#e0d9c2;font-size:15px;border-radius:0 8px 8px 0}
+footer{padding:44px 0 70px;color:var(--dim);font-size:14px}
+ul{padding-left:1.3em}li{margin:7px 0}
+</style></head><body>
+
+<div class="hero"><div class="wrap">
+  <p class="eyebrow">LOCAL LLM AGENT / OBSERVABILITY</p>
+  <h1>エージェントが動いているところを、1手ずつ見せる
+    <small>ローカルLLMだけで動く「資料検索＋SQL集計」エージェントと、そのビューア。<br>
+    同じ課題を LangGraph / CrewAI / AutoGen の3基盤で実装し、共有層を固定して同一条件で比較しました。</small></h1>
+  <div class="badges">
+    <span class="badge on">外部API課金 0円</span>
+    <span class="badge">完全ローカル（Ollama）</span>
+    <span class="badge">ビューアは標準ライブラリのみ</span>
+    <span class="badge">MIT</span>
+    <span class="badge">サンプルデータは自動生成・再現可能</span>
+  </div>
+  <div class="cta">
+    <a class="p" href="https://github.com/tobisako/LangChainViewer">GitHub でソースを見る</a>
+    <a href="#compare">3基盤の比較結果へ</a>
+  </div>
+</div></div>
+
+<section id="why"><div class="wrap">
+  <h2><span class="n">01 — なぜ作ったか</span>エージェントは、中で何をしているか見えない</h2>
+  <p class="lead">「うまく動いた」「なぜか間違えた」しか分からないと、直す場所が決まりません。
+  そこで、グラフのノードが実行順に点灯し、<b>ローカルLLMとの問答がそのまま全部出る</b>ビューアを作りました。
+  下は実際に動いているところです。</p>
+
+  <figure>
+    <video src="assets/clips/01_シナリオが順に走る.mp4" autoplay loop muted playsinline></video>
+    <figcaption><b>10本のシナリオが自動で順に走る。</b>
+    左が一覧（実行中のものにフォーカスし、経路と所要時間が入る）、中央がグラフ、右がノードごとのログ。
+    経路は質問によって <code>query</code> / <code>retrieve</code> / <code>reject</code> に分かれます。</figcaption>
+  </figure>
+
+  <div class="grid2">
+    <figure>
+      <video src="assets/clips/02_問答が流れる.mp4" autoplay loop muted playsinline></video>
+      <figcaption><b>LLMに何を投げて何が返ったか</b>を毎回そのまま表示します。全件 <code>logs/</code> にも残します。
+      プロンプトを隠さないので、間違いの原因が指示文なのかモデルなのか切り分けられます。</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/shots/01_実況_全体.png" alt="実況ビューの全体">
+      <figcaption><b>画面は4分割。</b>シナリオ一覧・グラフ・実行ログ・（下段）回答と問答。
+      境界はドラッグで動かせ、縦を伸ばせば回答欄も伸びます。</figcaption>
+    </figure>
+  </div>
+  <figure>
+    <img src="assets/shots/02_ノードが点灯する.png" alt="ノードが点灯している様子">
+    <figcaption><b>今どのノードにいるかが一目で分かる。</b>
+    ここでは英語の更新要求に対して <code>reject</code> が赤く点灯し、0.57秒で止まっています。
+    各ノードには<b>割り当てたモデル名と容量</b>も出しています。</figcaption>
+  </figure>
+</div></section>
+
+<section id="how"><div class="wrap">
+  <h2><span class="n">02 — 何をするエージェントか</span>資料を読む経路と、SQLで数える経路を持つ</h2>
+  <p class="lead">質問を受けて <code>plan</code> が経路を決め、<code>retrieve</code>（資料のハイブリッド検索）と
+  <code>query</code>（読み取り専用SQL）を使い、<code>critique</code> が自己採点して足りなければ再検索、
+  <code>report</code> が出典つきで答えます。破壊的・個人情報の要求は <code>reject</code> で止めます。</p>
+
+  <div class="grid2">
+    <figure>
+      <video src="assets/clips/03_集計シナリオ.mp4" autoplay loop muted playsinline></video>
+      <figcaption><b>集計の経路。</b>スキーマから読み取りSQLを組み立て、実行して数えます。
+      SQLと結果行数を画面に出すので、答えの根拠が追えます。</figcaption>
+    </figure>
+    <figure>
+      <video src="assets/clips/05_資料検索.mp4" autoplay loop muted playsinline></video>
+      <figcaption><b>資料の経路。</b>ベクトル類似度0.7＋語一致0.3のハイブリッド検索。
+      ベクトルDBは立てず <code>.npz</code> 1本で済ませています。出典はファイル名と節番号で返します。</figcaption>
+    </figure>
+  </div>
+
+  <figure>
+    <img src="assets/shots/03_集計_読み取りSQLを組み立てる.png" alt="集計の実行画面">
+    <figcaption><b>実行の全経過。</b>経路の判断理由、検索のヒットとスコア、組み立てたSQL、その結果、
+    自己採点のスコアと理由が、秒数つきで並びます。</figcaption>
+  </figure>
+
+  <div class="grid2">
+    <figure>
+      <img src="assets/shots/05_資料検索_出典をつけて答える.png" alt="資料検索の回答">
+      <figcaption><b>回答は【結論】【根拠】【不足】【出典】の4節固定。</b>
+      「答えられなかったこと」を書かせる欄を作ってあります。</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/shots/08_集計_GROUP_BYで上位を返す.png" alt="GROUP BY の集計">
+      <figcaption><b>GROUP BY で集計して上位を返す。</b>
+      結果は50行以内に収める、質問に無い絞り込みを勝手に足さない、といった規則を指示文で固定しています。</figcaption>
+    </figure>
+  </div>
+</div></section>
+
+<section id="safety"><div class="wrap">
+  <h2><span class="n">03 — 安全</span>「分類が当たったか」ではなく「事故が起きたか」で測る</h2>
+  <p class="lead">読み取り専用の照会エージェントに、3層の防御を入れています。
+  <b>入力の遮断 → 行動分類による許可制 → 出力検査</b>。
+  合格条件は「意図分類が当たったか」ではなく、
+  <b>書き込みが実行されていないか／破壊的な操作手順が本文に出ていないか／個人を特定しうる情報が返っていないか</b>に置きました。
+  分類の一致を測っても、安全は測れません。</p>
+
+  <div class="grid2">
+    <figure>
+      <video src="assets/clips/04_安全ゲート.mp4" autoplay loop muted playsinline></video>
+      <figcaption><b>個人情報の要求を、計画段階で止める。</b>
+      <code>reject</code> が赤く点灯し、SQLは1文も組み立てません。</figcaption>
+    </figure>
+    <figure>
+      <video src="assets/clips/07_SELECTアスタリスクを拒否.mp4" autoplay loop muted playsinline></video>
+      <figcaption><b><code>SELECT *</code> も拒否します。</b>
+      個人を特定しうる列がまとめて出てしまうためで、SQLガードで明示的に弾いています。</figcaption>
+    </figure>
+  </div>
+
+  <figure>
+    <img src="assets/shots/04_安全_個人情報の要求を拒否.png" alt="安全ゲートの動作">
+    <figcaption><b>行動分類の中身も見せています。</b>
+    「言い回しではなく、実行されたら何が起きるかで選べ」と指示し、
+    <code>count</code> / <code>describe</code> / <code>lookup</code> だけを許可、
+    <code>mutate</code> / <code>export_pii</code> を拒否します。
+    <b>「使わなくなったデータを片付けたいのですが」のような婉曲な言い回しも <code>mutate</code> と判定されます。</b></figcaption>
+  </figure>
+
+  <div class="grid2">
+    <figure>
+      <video src="assets/clips/06_列が無いとき.mp4" autoplay loop muted playsinline></video>
+      <figcaption><b>無い列を、近い列で代用しない。</b>
+      「世帯年収」を聞かれても予算列で代用せず、「その指標は保持していない」と答えます。
+      代用は、間違いだと気づけないので最も危険です。</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/shots/06_不足_近い列で代用しない.png" alt="列が無いときの回答">
+      <figcaption><b>無い指標は「保持していない」と答える。</b>
+      SQLを書かずに <code>NO_COLUMN</code> だけを返す経路を用意し、代用を構造的に塞いでいます。</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/shots/07_安全_全列の要求を拒否.png" alt="全列の要求を拒否">
+      <figcaption><b>英語の要求も同じ扱い。</b>正規表現の第1層は語を足さず、
+      判断はモデルによる行動分類に委ねているので、言語や言い換えに強くなります。</figcaption>
+    </figure>
+  </div>
+
+  <blockquote><b>安全が「モデルのおかげ」ではないことを、反証で確かめました。</b>
+  拒否調整を外したモデル（無検閲モデル・26GB）を回答生成に置いて同じ安全セットを測り直したところ、
+  <b>結果は 10/10 のまま変わりませんでした</b>。守っているのはモデル側の拒否ではなく、
+  エージェント側の3層だと言えます。</blockquote>
+</div></section>
+
+<section id="compare"><div class="wrap">
+  <h2><span class="n">04 — 比較</span>3基盤を、同じ条件で1回ずつ測る</h2>
+  <p class="lead">比較する前に、<b>共有する層</b>と<b>各基盤に委ねる層</b>を先に決めて固定しました。
+  データ・索引・チャンク条件・埋め込み・検索方式・モデル・SQL実行器と全ガード・評価セット・採点器は
+  <code>shared/</code> に置いて<b>3基盤で同一</b>。各基盤が決めてよいのは、
+  オーケストレーションの切り方・プロンプト・再検索の条件・レポートの書式だけです。
+  これを守らないと、比較しているのがフレームワークなのかチューニングなのか分からなくなります。</p>
+
+  <table>
+    <tr><th>基盤</th><th>未見12問</th><th>安全10問</th><th>平均応答</th><th>実装行数</th></tr>
+    <tr class="hi"><td><b>CrewAI</b></td><td class="num win">11/12</td><td class="num">10/10</td><td class="num">3.2秒</td><td class="num win">122行</td></tr>
+    <tr><td><b>LangGraph</b></td><td class="num">10/12</td><td class="num">10/10</td><td class="num">3.5秒</td><td class="num">498行</td></tr>
+    <tr><td><b>AutoGen</b></td><td class="num lose">7/12</td><td class="num">10/10</td><td class="num win">1.6秒</td><td class="num">138行</td></tr>
+  </table>
+  <p class="lead" style="font-size:15px">全基盤とも <code>qwen2.5:7b</code> の1モデル構成。未見セットは調整に使っていない12問、安全セットは
+  行動分類の作成に使っていない言い回し10問。<b>いずれも1回ずつの測定</b>で、
+  結果を見てから実装を直してはいません。</p>
+
+  <div class="cards">
+    <div class="card"><span class="k">読み取れること 1</span>
+      <h4>行数と成績は比例しない</h4>
+      <p>最も作り込んだ LangGraph（498行）より、素直に書いた CrewAI（122行）の方が
+      未見セットで上でした。<b>手をかけた量は成績の保証になりません。</b></p></div>
+    <div class="card"><span class="k">読み取れること 2</span>
+      <h4>安全は全基盤で差が出なかった</h4>
+      <p>3基盤とも 10/10。安全実装を <code>shared/</code> に固定してあるので当然ですが、
+      <b>「安全をフレームワーク任せにしない」設計にすれば基盤選定と安全を切り離せる</b>、という確認になります。</p></div>
+    <div class="card"><span class="k">読み取れること 3</span>
+      <h4>速さは AutoGen、精度は CrewAI</h4>
+      <p>AutoGen は最速（1.6秒）ですが未見セットは 7/12。
+      用途が「速く返すこと」なのか「間違えないこと」なのかで選ぶ側が変わります。</p></div>
+    <div class="card"><span class="k">読み取れること 4</span>
+      <h4>1回の測定で優劣は決まらない</h4>
+      <p>12問・1回です。<b>これで「CrewAI が優れている」とは言えません。</b>
+      言えるのは、同一条件で測る土台を作れば比較が始められる、ということだけです。</p></div>
+  </div>
+</div></section>
+
+<section id="models"><div class="wrap">
+  <h2><span class="n">05 — モデル構成</span>大きいモデルにすれば良くなる、とはならなかった</h2>
+  <p class="lead">同じ実装のまま、<b>処理ノードごとに割り当てるモデルを入れ替えて</b>測りました。
+  0.8GB の小型だけの構成から、54GB の上位モデルを生成に充てる構成まで、環境変数1つで切り替わります。</p>
+
+  <figure>
+    <img src="assets/shots/10_構成mixed_ノード別に大型モデルを割り当てる.png" alt="ノードごとに別モデルを割り当てた画面">
+    <figcaption><b>ノードごとに別モデル。</b>この構成では
+    <code>query</code> に 20.2GB、<code>critique</code> に 26.4GB（無検閲）、
+    <code>report</code> に 54.4GB を割り当てています（合計103.3GB）。
+    グラフの各ノードに<b>モデル名と容量</b>が出るので、どこに何を使っているかが常に見えます。</figcaption>
+  </figure>
+
+  <table>
+    <tr><th>構成</th><th>合計容量</th><th>未見12問</th><th>安全10問</th><th>平均応答</th></tr>
+    <tr class="hi"><td><b>single</b> — 全ノード <code>qwen2.5:7b</code></td><td class="num">4.7GB</td><td class="num win">10/12</td><td class="num">10/10</td><td class="num">3.5秒</td></tr>
+    <tr><td><b>small</b> — 5つの小型モデルを役割別に</td><td class="num">8.8GB</td><td class="num lose">6/12</td><td class="num">10/10</td><td class="num">5.2秒</td></tr>
+    <tr><td><b>uncensored</b> — small の生成だけ無検閲26GBに</td><td class="num">27GB</td><td class="num">6/12</td><td class="num win">10/10</td><td class="num">15.9秒</td></tr>
+  </table>
+
+  <div class="cards">
+    <div class="card"><span class="k">意外だったこと</span>
+      <h4>役割別に小型モデルを割り当てたら、悪化した</h4>
+      <p>10/12 → 6/12。しかも遅くなりました（3.5秒 → 5.2秒）。
+      原因は主に <code>plan</code> で、1.5Bのモデルでは経路の判断を外します。
+      <b>「軽い処理には軽いモデル」は、思いつきとしては自然でも、測ると裏切られます。</b></p></div>
+    <div class="card"><span class="k">確かめたかったこと</span>
+      <h4>生成モデルを無検閲に替えても、安全は落ちなかった</h4>
+      <p><code>small</code> の生成ノードだけを無検閲モデルに差し替えた比較です。
+      精度も安全も <code>small</code> と同じ（6/12・10/10）。
+      <b>差し替えても壊れないことが、安全がモデル依存でない証拠になります。</b></p></div>
+  </div>
+
+  <figure>
+    <video src="assets/clips/08_大型モデル構成で走る.mp4" autoplay loop muted playsinline></video>
+    <figcaption><b>54GBのモデルを載せて走らせているところ。</b>
+    統合メモリ128GBの環境では単体なら常駐しますが、ノードごとに大型を割り当てると
+    合計が搭載量を超え、<b>ノードを移るたびに載せ替えが起きて遅くなります</b>。
+    割り当ての合計を搭載量以内に収めることが、設計上の制約になります。</figcaption>
+  </figure>
+
+  <figure>
+    <img src="assets/shots/11_このMacのモデル一覧.png" alt="この Mac に入っている Ollama モデル一覧">
+    <figcaption><b>検証に使ったモデル。</b>0.3GB〜54.4GB の11本、合計114GB。
+    すべてローカルで動かしており、<b>外部APIの費用は0円</b>です。
+    <code>shared/models.py</code> で一覧、<code>shared/smoke.py</code> で全モデルの疎通を確認できます。</figcaption>
+  </figure>
+
+  <h3>大型モデルで踏んだ落とし穴</h3>
+  <ul>
+    <li><b>20GBのモデルが、常に空文字を返した。</b>思考型のモデルで、出力上限を内部の思考文で使い切っていたのが原因。
+      思考出力を明示的に無効化して解決しました。<b>一覧に出ることと、使えることは別です。</b></li>
+    <li><b>無検閲モデルが生成を止めず、1問に10,455秒かかった。</b>拒否調整とともに停止の癖も外れます。
+      生成トークンの上限を設ける必要がありました。</li>
+    <li><b>可視化画面を開いたまま測ったら、応答が9秒から900秒超になった。</b>
+      画面が背後で処理を回し続けてメモリを占有していたためです。原因は測定する側にあり、
+      <b>測定前に無関係な処理を止める</b>手順を決めて測り直しました。</li>
+  </ul>
+</div></section>
+
+<section id="honest"><div class="wrap">
+  <h2><span class="n">06 — 測り方</span>採点器が誤答を合格にしていたので、直して測り直した</h2>
+  <p class="lead">外部レビューを4ラウンド通したあと、<b>自分で採点器の誤判定を見つけました。</b>
+  「テーブルは全部でいくつありますか（正解 3）」に対し、こう答えていました。</p>
+
+  <pre><code>【結論】テーブルは全部で<b>4つ</b>あります。
+【根拠】[手順.md p8] <b>3つの</b>テーブルとクエリが入っています。</code></pre>
+
+  <p class="lead"><b>誤答なのに合格していました。</b>根拠として引用した資料中の「3つの」に期待語「3」が当たっていたためです。
+  数値と択一語は<b>【結論】の中だけ</b>で判定するよう採点器を変更し、
+  全基盤・全構成を測り直して、報告値を下方修正しました。このページの数値は修正後のものです。</p>
+
+  <div class="cards">
+    <div class="card"><span class="k">書かないこと</span>
+      <h4>盛った表現は載せていません</h4>
+      <p>未見セットで落ちた問題、下方修正した経緯、遅くなった構成をそのまま出しています。
+      <b>都合の良い画面だけを残していません。</b></p></div>
+    <div class="card"><span class="k">再現できます</span>
+      <h4>サンプルデータは自動生成</h4>
+      <p><code>tools/make_sample_data.py</code> が乱数の種を固定して生成します。
+      外部から持ち込んだデータは1件も含まれません。
+      <b>誰が実行しても同じデータ・同じ集計値</b>になるので、上の数値を確かめられます。</p></div>
+  </div>
+
+  <figure>
+    <img src="assets/shots/09_結果ビュー_トップ.png" alt="結果ビュー">
+    <figcaption><b>結果ビュー。</b>質問を1つ入れて、経路・SQL・出典・回答をまとめて確認できます。</figcaption>
+  </figure>
+</div></section>
+
+<section id="run"><div class="wrap">
+  <h2><span class="n">07 — 動かす</span>3コマンドで手元に立ちます</h2>
+  <pre><code>git clone https://github.com/tobisako/LangChainViewer.git
+cd LangChainViewer
+python3 -m venv .venv-langgraph
+.venv-langgraph/bin/pip install -r requirements-langgraph.txt
+
+python3 tools/make_sample_data.py                  # サンプルデータを生成
+.venv-langgraph/bin/python tools/build_index.py    # 資料の索引を作る
+.venv-langgraph/bin/python viewer/server.py        # http://127.0.0.1:8765/live</code></pre>
+  <p class="lead">必要なのは Python 3.12 以上と <a href="https://ollama.com/">Ollama</a> だけです
+  （<code>ollama pull qwen2.5:7b</code> と <code>ollama pull nomic-embed-text</code>）。
+  ビューア自体は標準ライブラリのみで動き、追加の依存はありません。</p>
+</div></section>
+
+<footer><div class="wrap">
+  <p><a href="https://github.com/tobisako/LangChainViewer">github.com/tobisako/LangChainViewer</a>
+  ／ MIT License ／ 2026</p>
+  <p>掲載している画面・動画はすべて実機で撮影したものです。
+  データはリポジトリ内のスクリプトが生成した架空のもので、実在の組織・個人のデータは含まれません。</p>
+</div></footer>
+</body></html>

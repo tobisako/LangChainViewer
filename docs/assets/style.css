@@ -1,0 +1,147 @@
+/* 配色: ビジュアル共通ガイド gridjapan.com 実測ブランドカラー
+   アクア #19c0d7 / リボン青 #2f9fde / ティール #77cbc9 / CTA緑 #19d359
+   ＋ 手作りスライド頻出色の薄ブルー背景 #e8f1fb                        */
+:root{
+  --aqua:#19c0d7; --aqua-d:#0f96ab; --blue:#2f9fde; --teal:#77cbc9;
+  --green:#19d359; --green-d:#0f9c3f; --yellow:#FFD23F; --red:#dc2626;
+  --ink:#0d2233; --ink2:#4a6377; --line:#cfe3f2;
+  --bg:#eef6fd; --surface:#ffffff; --soft:#e8f1fb;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);font-feature-settings:"palt";
+     font:16px/1.9 "Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",YuGothic,Meiryo,sans-serif;
+     -webkit-font-smoothing:antialiased;
+     background:
+       radial-gradient(circle at 1px 1px,#c3dcef 1px,transparent 0) 0 0/22px 22px,
+       linear-gradient(178deg,#f4fbff 0%,var(--bg) 40%,#e4f4fb 100%);
+     background-attachment:scroll,fixed}
+a{color:var(--aqua-d)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+.mono{font-family:"JetBrains Mono",monospace}
+
+/* ── 上部の帯 ─────────────────────────── */
+.topbar{background:var(--ink);color:#dff3fb;position:sticky;top:0;z-index:40}
+.topbar .wrap{display:flex;align-items:center;gap:14px;padding:9px 24px;
+  font:500 12px/1.6 "JetBrains Mono",monospace;letter-spacing:.13em}
+.topbar .dot{width:9px;height:9px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 0 0 rgba(25,211,89,.75);animation:pulse 1.9s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 11px rgba(25,211,89,0)}100%{box-shadow:0 0 0 0 rgba(25,211,89,0)}}
+.topbar .gh{margin-left:auto;color:var(--aqua);text-decoration:none;border:1px solid #2b4a60;
+  border-radius:99px;padding:3px 14px}
+.topbar .gh:hover{background:#16344a}
+
+/* ── ヒーロー ─────────────────────────── */
+.hero{position:relative;overflow:hidden;
+  border-bottom:5px solid var(--ink);
+  background:linear-gradient(112deg,#ffffff 0%,#ffffff 52%,#e6f7fb 52.1%,#d8f2f8 100%)}
+.hero .wrap{padding:58px 24px 54px;position:relative;z-index:2}
+.hero .kicker{display:inline-flex;align-items:center;gap:9px;background:var(--ink);color:#fff;
+  font:700 12px/1 "JetBrains Mono",monospace;letter-spacing:.18em;
+  padding:8px 15px;border-radius:5px;margin:0 0 22px}
+h1{font:900 clamp(28px,4.6vw,50px)/1.34 "Noto Sans JP",sans-serif;margin:0 0 20px;letter-spacing:-.02em}
+h1 .mk{background:var(--yellow);padding:0 10px;border-radius:6px;box-decoration-break:clone}
+h1 .mk2{color:#fff;background:var(--aqua-d);padding:0 10px;border-radius:6px;box-decoration-break:clone}
+.hero p.sub{font-size:17px;color:var(--ink2);max-width:64ch;margin:0;line-height:2}
+.pills{display:flex;flex-wrap:wrap;gap:9px;margin:26px 0 0}
+.pill{font:700 13px/1 "Noto Sans JP",sans-serif;padding:9px 16px;border-radius:99px;
+  border:2px solid var(--ink);background:#fff;color:var(--ink)}
+.pill.g{background:var(--green);border-color:var(--green-d);color:#06331a}
+.pill.a{background:var(--aqua);border-color:var(--aqua-d);color:#04333c}
+.pill.y{background:var(--yellow);border-color:#c99f00}
+.cta{display:flex;flex-wrap:wrap;gap:13px;margin-top:30px}
+.cta a{text-decoration:none;font:700 15px/1 "Noto Sans JP",sans-serif;padding:15px 28px;
+  border-radius:9px;border:2px solid var(--ink);background:#fff;color:var(--ink);
+  box-shadow:4px 4px 0 var(--ink);transition:.12s}
+.cta a:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
+.cta a.p{background:var(--aqua);color:#04333c}
+
+/* スコアボード */
+.score{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:36px 0 0}
+@media(max-width:760px){.score{grid-template-columns:repeat(2,1fr)}}
+.sc{border:2px solid var(--ink);border-radius:10px;background:#fff;padding:16px 15px;
+    box-shadow:4px 4px 0 rgba(13,34,51,.16)}
+.sc .v{font:700 30px/1.15 "JetBrains Mono",monospace;letter-spacing:-.02em}
+.sc .l{font-size:12px;color:var(--ink2);margin-top:5px;line-height:1.65}
+.sc.a .v{color:var(--aqua-d)} .sc.g .v{color:var(--green-d)} .sc.r .v{color:var(--red)}
+
+/* ── セクション ───────────────────────── */
+section{padding:66px 0;position:relative}
+section+section{border-top:2px dashed var(--line)}
+section:nth-of-type(even){background:rgba(255,255,255,.62)}
+.h2{display:flex;gap:16px;align-items:flex-start;margin:0 0 14px}
+.h2 .no{flex:0 0 auto;width:46px;height:46px;border-radius:11px;background:var(--ink);color:var(--aqua);
+  display:grid;place-items:center;font:700 17px/1 "JetBrains Mono",monospace}
+h2{font:900 27px/1.5 "Noto Sans JP",sans-serif;margin:0;letter-spacing:-.01em}
+h2 .lbl{display:block;font:700 11px/1.6 "JetBrains Mono",monospace;color:var(--aqua-d);
+  letter-spacing:.2em;margin-bottom:3px}
+.lead{color:var(--ink2);font-size:16.5px;margin:0 0 34px;max-width:78ch;line-height:2}
+.lead b,figcaption b,li b,.card p b,td b{color:var(--ink);font-weight:700}
+h3{font:900 19px/1.7 "Noto Sans JP",sans-serif;margin:46px 0 14px}
+
+/* ── メディア（暗い画面を白枠＋タブで囲う） ── */
+figure{margin:0 0 30px;position:relative}
+.fr{border:3px solid var(--ink);border-radius:12px;background:var(--ink);overflow:hidden;
+    box-shadow:6px 6px 0 rgba(13,34,51,.14)}
+.fr>video,.fr>img{width:100%;display:block}
+.tab{position:absolute;top:-13px;left:18px;z-index:3;
+  font:700 11px/1 "JetBrains Mono",monospace;letter-spacing:.14em;
+  padding:7px 12px;border-radius:5px;border:2px solid var(--ink);background:var(--aqua);color:#04333c}
+.tab.g{background:var(--green)} .tab.y{background:var(--yellow)} .tab.w{background:#fff}
+figcaption{color:var(--ink2);font-size:14.5px;margin-top:14px;line-height:1.95}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:30px}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+
+/* ── 表 ─────────────────────────────── */
+.tbox{border:3px solid var(--ink);border-radius:12px;overflow:hidden;background:#fff;
+      box-shadow:6px 6px 0 rgba(13,34,51,.12);margin:24px 0}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{padding:13px 16px;text-align:left;vertical-align:middle;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:none}
+th{background:var(--ink);color:#dff3fb;font:700 12px/1.6 "JetBrains Mono",monospace;
+   letter-spacing:.09em;white-space:nowrap}
+td.num{font:500 15px/1.6 "JetBrains Mono",monospace;white-space:nowrap}
+.win{color:var(--green-d);font-weight:700}
+.lose{color:var(--red);font-weight:700}
+tr.hi td{background:#e9fbf0}
+tr.hi td:first-child{box-shadow:inset 5px 0 0 var(--green)}
+
+/* ── カード ─────────────────────────── */
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:28px 0}
+@media(max-width:860px){.cards{grid-template-columns:1fr}}
+.card{border:2px solid var(--ink);border-radius:12px;padding:22px 24px;background:#fff;
+      box-shadow:5px 5px 0 rgba(13,34,51,.12)}
+.card .k{display:inline-block;font:700 11px/1 "JetBrains Mono",monospace;letter-spacing:.14em;
+  background:var(--yellow);border:2px solid var(--ink);border-radius:5px;padding:5px 10px;margin-bottom:12px}
+.card.a .k{background:var(--aqua)} .card.g .k{background:var(--green)} .card.w .k{background:#fff}
+.card h4{margin:0 0 9px;font:900 16.5px/1.65 "Noto Sans JP",sans-serif}
+.card p{margin:0;color:var(--ink2);font-size:15px;line-height:1.95}
+
+pre{background:var(--ink);border:3px solid var(--ink);border-radius:11px;padding:20px 22px;
+    overflow-x:auto;color:#d8f2f8;box-shadow:6px 6px 0 rgba(13,34,51,.12);
+    font:14px/1.9 "JetBrains Mono",Menlo,monospace}
+pre b{color:var(--yellow);font-weight:700}
+code{font:13.5px/1.6 "JetBrains Mono",Menlo,monospace;background:var(--soft);
+     color:var(--ink);border:1px solid var(--line);padding:1px 7px;border-radius:5px}
+pre code{background:none;padding:0;border:none;color:inherit}
+blockquote{margin:28px 0;padding:24px 26px;background:#fffdf0;border:3px solid var(--ink);
+  border-radius:12px;box-shadow:6px 6px 0 var(--yellow);font-size:16px;line-height:2}
+ul{padding-left:1.35em}li{margin:10px 0;line-height:1.95}
+footer{background:var(--ink);color:#a9c7da;padding:46px 0 68px;font-size:14px;border-top:5px solid var(--aqua)}
+footer a{color:var(--aqua)}
+
+/* ページ間リンクのカード */
+.next{display:block;text-decoration:none;color:inherit;border:3px solid var(--ink);
+  border-radius:12px;background:#fff;padding:24px 26px;box-shadow:6px 6px 0 var(--aqua);
+  margin:30px 0;transition:.12s}
+.next:hover{transform:translate(2px,2px);box-shadow:4px 4px 0 var(--aqua)}
+.next .k{font:700 11px/1 "JetBrains Mono",monospace;letter-spacing:.16em;color:var(--aqua-d)}
+.next h4{margin:10px 0 8px;font:900 20px/1.5 "Noto Sans JP",sans-serif}
+.next p{margin:0;color:var(--ink2);font-size:15px;line-height:1.9}
+.next .go{display:inline-block;margin-top:14px;font-weight:700;color:var(--aqua-d)}
+/* 箇条の仕様リスト */
+.spec{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:26px 0}
+@media(max-width:860px){.spec{grid-template-columns:1fr}}
+.spec div{border:2px solid var(--line);border-radius:10px;background:#fff;padding:16px 18px}
+.spec b{display:block;margin-bottom:5px}
+.spec span{color:var(--ink2);font-size:14.5px;line-height:1.85}

@@ -1,0 +1,4 @@
+autogen-agentchat==0.7.5
+autogen-ext[ollama]==0.7.5
+numpy>=2.0
+PyYAML>=6.0

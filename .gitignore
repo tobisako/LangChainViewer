@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv*/
+logs/
+results/
+data/*.sqlite
+data/*.csv
+data/index.npz
+.DS_Store

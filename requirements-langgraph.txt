@@ -1,0 +1,4 @@
+langgraph==1.2.11
+langchain-ollama==1.1.0
+numpy>=2.0
+PyYAML>=6.0

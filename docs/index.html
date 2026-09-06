@@ -275,7 +275,12 @@ ul{padding-left:1.3em}li{margin:7px 0}
     <tr class="hi"><td><b>single</b> — 全ノード <code>qwen2.5:7b</code></td><td class="num">4.7GB</td><td class="num win">10/12</td><td class="num">10/10</td><td class="num">3.5秒</td></tr>
     <tr><td><b>small</b> — 5つの小型モデルを役割別に</td><td class="num">8.8GB</td><td class="num lose">6/12</td><td class="num">10/10</td><td class="num">5.2秒</td></tr>
     <tr><td><b>uncensored</b> — small の生成だけ無検閲26GBに</td><td class="num">27GB</td><td class="num">6/12</td><td class="num win">10/10</td><td class="num">15.9秒</td></tr>
+    <tr><td><b>large</b> — 照会と生成に20GB／54GBの上位モデル</td><td class="num">75GB</td><td class="num">8/12</td><td class="num">10/10</td><td class="num lose">32.1秒</td></tr>
   </table>
+  <p class="lead" style="font-size:15px"><b>最も大きい構成が、最も成績が悪いわけではないが、最良でもない。</b>
+  4.7GBの1モデル構成（10/12・3.5秒）に対し、75GBを積んだ構成は 8/12・32.1秒。
+  <b>容量を16倍にして、精度は下がり、応答は9倍遅くなりました。</b>
+  安全はどの構成でも 10/10 で、モデルの規模と無関係でした。</p>
 
   <div class="cards">
     <div class="card"><span class="k">意外だったこと</span>
@@ -283,6 +288,11 @@ ul{padding-left:1.3em}li{margin:7px 0}
       <p>10/12 → 6/12。しかも遅くなりました（3.5秒 → 5.2秒）。
       原因は主に <code>plan</code> で、1.5Bのモデルでは経路の判断を外します。
       <b>「軽い処理には軽いモデル」は、思いつきとしては自然でも、測ると裏切られます。</b></p></div>
+    <div class="card"><span class="k">測って初めて分かること</span>
+      <h4>75GB積んでも、4.7GBに勝てなかった</h4>
+      <p>上位モデルを照会と生成に充てた <code>large</code> は 8/12・32.1秒。
+      <code>qwen2.5:7b</code> 1本の 10/12・3.5秒に届きませんでした。
+      <b>この課題では、モデルの規模より指示文と経路設計の方が効いています。</b></p></div>
     <div class="card"><span class="k">確かめたかったこと</span>
       <h4>生成モデルを無検閲に替えても、安全は落ちなかった</h4>
       <p><code>small</code> の生成ノードだけを無検閲モデルに差し替えた比較です。
